@@ -17,7 +17,7 @@ type LikesInfo = {
 }
 
 const getIp = (headers: IncomingHttpHeaders): string => {
-    const ip = String(headers['fastly-client-ip']);
+    const ip = String(headers['x-forwarded-for']);
     if (!ip) throw Error('No fastly-client-ip');
     return ip;
 }
