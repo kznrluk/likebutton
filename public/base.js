@@ -68,7 +68,7 @@ export class LikeButton {
             } else {
                 button.setAttribute('pushed', 'pushed');
                 current += 1;
-                button.innerText = `💗 ${currentData.likes + 1}`;
+                button.innerText = `💗 ${current}`;
                 this.onLike();
             }
         });
