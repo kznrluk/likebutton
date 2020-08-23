@@ -144,7 +144,7 @@ export const decrease = functions.region('asia-northeast1').https.onRequest(asyn
 
     if (req.body.url) {
         const url = new URL(req.body.url);
-        if (!await isIncreasedIp(url, getIp(req.headers))?.isIncrease) {
+        if (await isIncreasedIp(url, getIp(req.headers))?.isIncrease) {
             const likesInfo = await getLikesInfo(url) ?? createNewSiteInfo();
 
             await setPathInfo(url, {
