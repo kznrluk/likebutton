@@ -18,7 +18,7 @@ type LikesInfo = {
 
 const getIp = (headers: IncomingHttpHeaders): string => {
     const ip = String(headers['x-forwarded-for']);
-    if (!ip) throw Error('No fastly-client-ip');
+    if (!ip) throw Error('No x-forwarded-for');
     return ip;
 }
 
@@ -54,7 +54,7 @@ const isIncreasedIp = (url: URL, ipAddr: string) => {
         .collection('logs')
         .doc(ipAddr)
         .get()
-        .then(doc => doc.exists ? doc.data() : null) as unknown as { createdAt: number, isIncrease: boolean } | null;
+        .then(doc => doc.exists ? doc.data() : null) as unknown as Promise<{ createdAt: number, isIncrease: boolean } | null> ;
 }
 
 // GET
@@ -109,7 +109,8 @@ export const increase = functions.region('asia-northeast1').https.onRequest(asyn
     if (req.body.url) {
         const url = new URL(req.body.url);
 
-        if (!await isIncreasedIp(url, getIp(req.headers))?.isIncrease) {
+        const previousLog = await isIncreasedIp(url, getIp(req.headers));
+        if (!previousLog?.isIncrease) {
             const likesInfo = await getLikesInfo(url) ?? createNewSiteInfo();
 
             await setPathInfo(url, {
@@ -144,7 +145,9 @@ export const decrease = functions.region('asia-northeast1').https.onRequest(asyn
 
     if (req.body.url) {
         const url = new URL(req.body.url);
-        if (await isIncreasedIp(url, getIp(req.headers))?.isIncrease) {
+
+        const previousLog = await isIncreasedIp(url, getIp(req.headers));
+        if (previousLog?.isIncrease) {
             const likesInfo = await getLikesInfo(url) ?? createNewSiteInfo();
 
             await setPathInfo(url, {
